@@ -1,0 +1,214 @@
+﻿@model Projekat.Models.Auction
+@{
+    ViewBag.Title = "DetailAuction";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>All About Auction</h2>
+
+<center>
+    <div>
+        <h4>@Model.name</h4>
+        <hr />
+        @*  <dl class="dl-horizontal"> *@
+        <dt>
+            @Html.DisplayNameFor(model => model.name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.image)
+        </dt>
+
+        <dd>
+            @{
+                string imreBase64Data = Convert.ToBase64String(@Model.image);
+                string imgDataUrl = string.Format("data:image/png;base64,{0}", imreBase64Data);
+            }
+            <img src="@imgDataUrl" style="width:20%" />
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.startPrice)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.startPrice)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.currPrice)
+        </dt>
+
+        <div id="currPrice">@Html.DisplayFor(model => model.currPrice) @Html.DisplayFor(model => model.currency)</div>@*<h3 class="text-success" id="currency">@Html.DisplayFor(model => model.currency)</h3>*@
+        <strong>Vreme </strong> <div id="timeString"></div>
+        <dt>
+            @Html.DisplayNameFor(model => model.tokenPrice)
+        </dt>
+
+
+        <div id="tokenPrice">@Html.DisplayFor(model => model.tokenPrice)</div>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.userIdCreate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.userIdCreate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.duration)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.duration)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.timeCreated)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.timeCreated)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.timeOpened)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.timeOpened)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.timeClosed)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.timeClosed)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.bids)
+        </dt>
+        @{
+            string bidsIs1 = "bids" + Model.id;
+        }
+        <div class="table-responsive-sm">
+            <table class="table table-bordered table-hover" id="@bidsIs1">
+                <thead>
+                    <tr>
+                        <td><strong>Name</strong></td>
+                        <td><strong>Lastname</strong></td>
+                        <td><strong>Time Sent</strong></td>
+                    </tr>
+                </thead>
+                @if (Model.bids != null)
+            {
+                foreach (var item in Model.bids.OrderByDescending(b => b.timeSent))
+                {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.user.name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.user.lastname)
+                            </td>
+                            <td>
+                                @item.timeSent
+                            </td>
+                        </tr>
+                    }
+                }
+            </table>
+        </div>
+        @*   </dl> *@
+    </div>
+</center>
+
+  @if (@Model.status == "OPENED")
+                                {
+<script>
+                                  var countDown = new Date().getTime() -@((System.DateTime.Now - @Model.timeOpened.Value).TotalMilliseconds) + @Model.duration *
+                                            1000;
+
+                                        var x = setInterval(function() {
+                                            var now = new Date().getTime();
+                                            var distance = countDown - now;
+
+                                            if (distance <= 0) {
+                                                $.ajax({
+                                                    type: "GET",
+                                                    url: '@Url.Action("EndOfAuction", "Auction", new {id = @Model.id})',
+                                                    dataType: "json",
+                                                    contentType: "application/json; charset=utf-8",
+                                                    success: function() {
+
+                                                    }
+                                                });
+                                                clearInterval(x);
+
+                                                document.getElementById("timeString").innerHTML = "COMPLETED";
+                                                document.getElementById("timeString").className = "text-danger";
+                                         
+                                                return;
+                                            }
+
+                                            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                                            var hours = Math.floor(
+                                                (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                                            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                                            document.getElementById("timeString").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+                                        }, 1000);
+</script>
+    }
+  else
+  {
+      if (@Model.status == "COMPLETED")
+      {
+
+          <script>
+              document.getElementById("timeString").innerHTML = "COMPLETED";
+              document.getElementById("timeString").className = "text-danger";
+          </script>
+      }
+
+      if (@Model.status == "READY")
+      {
+          <script>
+              document.getElementById("timeString").innerHTML = "READY";
+              document.getElementById("timeString").className = "text-info";
+          </script>
+      }
+  }
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src="~/signalr/js"></script>
+    <script>
+        var hubProjekat = $.connection.hub.start();
+
+        $.connection.hub.disconnected(function () {
+
+            setTimeout(function () {
+                hubProjekat = $.connection.hub.start();
+                console.log("disconnected");
+            }, 5000);
+        });
+
+        $.connection.hubProjekat.client.bidUp = function (name, lastname, time, tokens, price, id) {
+            var tableIs = "bids" + id;
+            var table = document.getElementById(tableIs);
+                var row = table.insertRow(1);
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                cell1.innerHTML = name;
+                cell2.innerHTML = lastname;
+                cell3.innerHTML = time;
+                document.getElementById("currPrice").innerHTML = price;
+                document.getElementById("tokenPrice").innerHTML = tokens;
+            };
+     /*       hubUpdate.client.updateCurrency = function (currency) {
+                document.getElementById("currency").innerHTML = currency;
+            }; */
+    </script>
+}

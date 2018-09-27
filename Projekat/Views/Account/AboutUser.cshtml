@@ -1,0 +1,96 @@
+﻿@model Projekat.Models.User
+@{
+    ViewBag.Title = "AboutUser";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>About User</h2>
+
+<center>
+<div>
+    <h4>@Model.name @Model.lastname</h4>
+    <hr />
+  
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.lastname)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.lastname)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.mail)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.mail)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.numOfTokens)
+        </dt>
+    </dl>
+  @{
+      string tokensPrice = "price" + @Model.id;
+  }
+    <span id="@tokensPrice">@Model.numOfTokens</span>
+ 
+</div>
+</center>
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src="~/signalr/js"></script>
+    <script>
+        var hubProjekat = $.connection.hub.start();
+
+        $.connection.hub.disconnected(function () {
+
+            setTimeout(function () {
+                hubProjekat = $.connection.hub.start();
+                console.log("disconnected");
+            }, 5000);
+        });
+
+        $.connection.hubProjekat.client.userUp = function (tokens, id) {
+            var tokensPrice1 = "price" + id;
+            document.getElementById(tokensPrice1).innerHTML = tokens;
+        };
+        $.connection.hubProjekat.client.userUp1 = function (tokens, id) {
+            var tokensPrice1 = "price" + id;
+            document.getElementById(tokensPrice1).innerHTML = tokens;
+            
+        };
+    </script>
+}
+
+        
+     @*       var hubUpdate = $.connection.hubProjekat;
+            $.connection.hub.start();
+
+
+            $.connection.hub.disconnected(function () {
+
+                setTimeout(function () {
+                    hubProjekat = $.connection.hub.start();
+                    console.log("disconnected");
+                }, 5000);
+            });
+
+            hubUpdate.client.userUp = function (tokens) {
+                document.getElementById("tokensPrice").innerHTML = tokens;
+            };
+            hubUpdate.client.userUp1 = function (tokens) {
+                document.getElementById("tokensPrice").innerHTML = tokens;
+            }; *@
+           
+   

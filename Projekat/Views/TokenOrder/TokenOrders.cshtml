@@ -1,0 +1,52 @@
+﻿@model PagedList.IPagedList<Projekat.Models.TokenOrder>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+@{
+    ViewBag.Title = "TokenOrders";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Token Orders</h2>
+<h3>@ViewBag.Message</h3>
+
+<div class="table-responsive-sm">
+    <table class="table table-bordered ">
+        <tr>
+            <th>
+                Type of order
+            </th>
+            <th>
+                Number of ordered tokens
+            </th>
+            <th>
+                Status
+            </th>
+            <th>
+                Date when submitted
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(element => item.type)
+                </td>
+                <td>
+                    @Html.DisplayFor(element => item.numOfTokens)
+                </td>
+                <td>
+                    @Html.DisplayFor(element => item.status)
+                </td>
+                <td>
+                    @Html.DisplayFor(element => item.dateSubmitted)
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+<br />
+
+Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+@Html.PagedListPager(Model, page => Url.Action("TokenOrders", new { page }))

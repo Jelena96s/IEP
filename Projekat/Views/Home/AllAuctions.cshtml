@@ -1,0 +1,314 @@
+﻿@model PagedList.IPagedList<Projekat.Models.Auction>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+@{
+    ViewBag.Title = "All auctions:";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<SelectListItem> listForSorting = new List<SelectListItem>();
+
+    SelectListItem option0 = new SelectListItem
+    {
+        Text = "Choose",
+        Value = "Choose"
+    };
+    SelectListItem option1 = new SelectListItem
+    {
+        Text = "READY",
+        Value = "READY"
+    };
+    SelectListItem option2 = new SelectListItem
+    {
+        Text = "ascending",
+        Value = "ascending"
+    };
+    SelectListItem option3 = new SelectListItem
+    {
+        Text = "descending",
+        Value = "descending"
+    };
+    SelectListItem option4 = new SelectListItem
+    {
+        Text = "price_asc",
+        Value = "price_asc"
+    };
+    SelectListItem option5 = new SelectListItem
+    {
+        Text = "price_desc",
+        Value = "price_desc"
+    };
+    SelectListItem option6 = new SelectListItem
+    {
+        Text = "OPENED",
+        Value = "OPENED"
+    };
+    SelectListItem option7 = new SelectListItem
+    {
+        Text = "COMPLETED",
+        Value = "COMPLETED"
+    };
+    listForSorting.Add(option0);
+    listForSorting.Add(option1);
+    listForSorting.Add(option2);
+    listForSorting.Add(option3);
+    listForSorting.Add(option4);
+    listForSorting.Add(option5);
+    listForSorting.Add(option6);
+    listForSorting.Add(option7);
+
+    Projekat.Models.User user = Session["User"] as Projekat.Models.User;
+}
+
+<h3>@ViewBag.Message</h3>
+
+@using (Html.BeginForm("AllAuctions", "Home", FormMethod.Get))
+{
+    <div class="row">
+        <div class="col-sm-2">
+            Search string:
+            @Html.TextBox("searchStringOrPartOfString", ViewBag.CurrentFilter as string, new { @class = "form-control mr-sm-2" })
+        </div>
+        <div class="col-sm-2">
+            Price from:
+            @Html.TextBox("priceFrom", "", new { @class = "form-control mr-sm-2" })
+        </div>
+        <div class="col-sm-2">
+            Price to:
+            @Html.TextBox("priceTo", "", new { @class = "form-control mr-sm-2" })
+        </div>
+        <div class="col-sm-2">
+            Items per page:
+            @Html.TextBox("itemsPerPage", "", new { @class = "form-control mr-sm-2" })
+        </div>
+        <div class="col-sm-2">
+            Sort by:
+            @Html.DropDownList("wayOfSorting", listForSorting, new { @class = "form-control mr-sm-2" })
+        </div>
+        <br />
+        <br />
+        <br />
+        <div class="col-sm-2">
+            <button class="btn btn-success" type="submit">Sort</button>
+        </div>
+    </div>
+}
+
+<div class="row">
+
+    <div class="card-deck">
+        @{
+            var i = 0;
+            foreach (var item in Model)
+            {
+
+                <div class="col-sm-5">
+                    <center>
+                        @if ((user != null) && (user.isAdmin == 1) && (item.status == "READY"))
+                        {
+                            using (Html.BeginForm("ChangeStatus", "Admin", new { id = @item.id }, FormMethod.Post, new { role = "form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning font-weight-bold" style="color:white">OPEN</button>
+                            }
+                            <br />
+                        }
+                        else
+                        {
+                            <br /><br />
+                        }
+
+                    </center>
+
+                    <div class="card">
+                        <a href='@Url.Action("DetailAuctionFromAllAuctions", "Auction", new {id = @item.id.ToString()})'>
+                            <div class="card-header text-primary text-center"><h4>@item.name</h4></div>
+                        </a>
+                        <div class="card-body">
+                            @{
+                                string imreBase64Data = Convert.ToBase64String(@item.image);
+                                string imgDataUrl = string.Format("data:image/png;base64,{0}", imreBase64Data);
+                            }
+                            <img class="card-img-top" src="@imgDataUrl" style="width:100%" />
+
+                            <center>
+                                @{
+                                    string timeString = "time" + @item.id;
+                                    string winner = "winner" + @item.id;
+                                    string buttonName = "btn" + @item.id;
+                                    string mailing = "mail" + @item.id;
+                                    string priceOf = "price" + @item.id;
+                                    string tokenValue = "tokenValue" + @item.id;
+                                }
+                                <h4 class="text-success" id="@timeString"></h4>
+                                <h3 class="text-success" id="@winner"></h3>
+
+                                <h5 class="text-success text-center" id="@priceOf">@item.currPrice @item.currency</h5>@*<h3 class="text-success" id="currency">@item.currency</h3>*@
+                                Price in tokens:  <h5 class="text-success text-center" id="@tokenValue">@item.tokenPrice</h5>
+                                @if (item.bids.Count != 0)
+                                {
+                                    <h5 id="@mailing"> @item.bids.LastOrDefault().user.mail</h5>
+                                }
+                                else
+                                {
+                                    <strong>No bids</strong>
+                                }
+                                @if (user != null && user.isAdmin != 1 && item.status == "OPENED" && user.id != item.userIdCreate)
+                                {
+                                    using (Html.BeginForm("Bid", "Bid", new { auctionId = @item.id, bidOffer = ViewBag.BidOffer }, FormMethod.Post, new { role = "form" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        @Html.TextBox("BidOffer", ViewBag.BidOffer as int?, new { @class = "form-control mr-sm-2" })
+                                        <button type="submit" id="@buttonName" class="btn btn-warning font-weight-bold" style="color:white">Bid Now!</button>
+                                    }
+                                }
+                            </center>
+                        </div>
+                    </div>
+                </div>
+                                    if (@item.status == "OPENED")
+                                    {
+                                        <script>
+                        @{
+                            string timeString3 = "time" + @item.id;
+                        }
+                                            var countDown@(i) = new Date().getTime() -
+                                                @((System.DateTime.Now - @item.timeOpened.Value).TotalMilliseconds) +
+                                                @item.duration *
+                                                1000;
+
+                                            var x = setInterval(function() {
+                                                var now = new Date().getTime();
+                                                var distance = countDown@(i) - now;
+
+                                                if (distance <= 0) {
+                                                    $.ajax({
+                                                        type: "GET",
+                                                        url: '@Url.Action("EndOfAuction", "Auction", new {id = @item.id})',
+                                                        dataType: "json",
+                                                        contentType: "application/json; charset=utf-8",
+                                                        success: function() {
+                                                        }
+                                                    });
+                                                    clearInterval(x);
+                                                    document.getElementById("@timeString3").innerHTML = "COMPLETED";
+                                                    document.getElementById("@timeString3").className = "text-danger";
+                                                    if (document.getElementById("@buttonName") != null)
+                                                        document.getElementById("@buttonName")
+                                                            .setAttribute("disabled", "true");
+                                                    return;
+                                                }
+
+                                                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                                                var hours = Math.floor(
+                                                    (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                                                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                                                document.getElementById("@timeString3").innerHTML =
+                                                    days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+                                            },
+                                                1000);
+                                        </script>
+    }
+    else
+    {
+        if (@item.status == "COMPLETED")
+        {
+            <script>
+                            @{
+                                string timeString2 = "time" + @item.id;
+                            }
+                document.getElementById("@timeString2").innerHTML = "COMPLETED";
+                document.getElementById("@timeString2").className = "text-danger";
+                if (document.getElementById("@buttonName") != null)
+                    document.getElementById("@buttonName").setAttribute("disabled", "true");
+            </script>
+    }
+
+    if (@item.status == "READY")
+    {
+        <script>
+                            @{
+                                string timeString1 = "time" + @item.id;
+                            }
+            document.getElementById("@timeString1").innerHTML = "READY";
+            document.getElementById("@timeString1").className = "text-info";
+            if (document.getElementById("@buttonName") != null)
+                document.getElementById("@buttonName").setAttribute("disabled", "true");
+        </script>
+            }
+        }
+        i++;
+    }
+
+
+        }
+    </div>
+</div>
+
+<br /><br />
+
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+        @Html.PagedListPager(Model, page => Url.Action("AllAuctions",
+    new { page, currentFilter = ViewBag.CurrentFilter, priceFrom = ViewBag.priceFrom, priceTo = ViewBag.priceTo, wayOfSorting = ViewBag.wayOfSorting, itemsPerPage = ViewBag.itemsPerPage }))
+
+
+        @section scripts {
+            <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+            <script src="~/signalr/js"></script>
+            <script>
+                var hubProjekat = $.connection.hub.start();
+
+                $.connection.hub.disconnected(function () {
+
+                    setTimeout(function () {
+                        hubProjekat = $.connection.hub.start();
+                        console.log("disconnected");
+                    }, 5000);
+                });
+
+                $.connection.hubProjekat.client.updatePage = function(id, price, currency, mail, tokenV) {
+                    var element = "price" + id;
+                    var stringForUp = price + " " + currency;
+                    var mailing1 = "mail" + id;
+                    var tokenValue = "tokenValue" + id;
+                    document.getElementById(element).innerHTML = stringForUp;
+                    document.getElementById(mailing1).innerHTML = mail;
+                    document.getElementById(tokenValue).innerHTML = tokenV;
+                };
+
+                $.connection.hubProjekat.client.updateWinner = function(id, name, lastname) {
+                    var winnerUp1 = "winner" + id;
+                    var winnerUp = "Winner is " + name + " " + lastname;
+                    document.getElementById(winnerUp1).innerHTML = winnerUp;
+                };
+            </script>
+        }
+        @*      @section scripts {
+
+                <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+                <script src="~/signalr/hubs"></script>
+                <script>
+
+                        var pageNewUp = $.connection.hubProjekat;
+                        $.connection.hub.start().done(function() {
+                        });
+
+                        pageNewUp.client.updatePage = function(id, price, currency) {
+                            var element = "price" + id;
+                            var stringForUp = price + " " + currency;
+                            document.getElementById(element).innerHTML = stringForUp;
+                        };
+
+                        pageNewUp.client.updateWinner = function(id, name, lastname) {
+                            var winnerUp1 = "winner" + id;
+                            var winnerUp = "Winner is " + name + " " + lastname;
+                            document.getElementById(winnerUp1).innerHTML = winnerUp;
+                        };
+                        /*     pageNewUp.client.updateCurrency1 = function(currency) {
+                                 document.getElementById("currency").innerHTML = currency;
+                             } */
+
+                </script>
+            }
+        *@
+

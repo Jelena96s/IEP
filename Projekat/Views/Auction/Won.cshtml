@@ -1,0 +1,136 @@
+﻿@model PagedList.IPagedList<Projekat.Models.Auction>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+@{
+    ViewBag.Title = "Won";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<SelectListItem> listForSorting = new List<SelectListItem>();
+
+    SelectListItem option0 = new SelectListItem
+    {
+        Text = "Choose",
+        Value = "Choose"
+    };
+    SelectListItem option1 = new SelectListItem
+    {
+        Text = "READY",
+        Value = "READY"
+    };
+    SelectListItem option2 = new SelectListItem
+    {
+        Text = "ascending",
+        Value = "ascending"
+    };
+    SelectListItem option3 = new SelectListItem
+    {
+        Text = "descending",
+        Value = "descending"
+    };
+    SelectListItem option4 = new SelectListItem
+    {
+        Text = "price_asc",
+        Value = "price_asc"
+    };
+    SelectListItem option5 = new SelectListItem
+    {
+        Text = "price_desc",
+        Value = "price_desc"
+    };
+    SelectListItem option6 = new SelectListItem
+    {
+        Text = "OPENED",
+        Value = "OPENED"
+    };
+    SelectListItem option7 = new SelectListItem
+    {
+        Text = "COMPLETED",
+        Value = "COMPLETED"
+    };
+    listForSorting.Add(option0);
+    listForSorting.Add(option1);
+    listForSorting.Add(option2);
+    listForSorting.Add(option3);
+    listForSorting.Add(option4);
+    listForSorting.Add(option5);
+    listForSorting.Add(option6);
+    listForSorting.Add(option7);
+
+    Projekat.Models.User user = Session["User"] as Projekat.Models.User;
+}
+<h2>Won</h2>
+<h3>@ViewBag.Message</h3>
+
+@using (Html.BeginForm("Won", "Auction", FormMethod.Get))
+{
+    <div class="row">
+    <div class="col-sm-2">
+        Search string:
+        @Html.TextBox("searchStringOrPartOfString", ViewBag.CurrentFilter as string, new { @class = "form-control mr-sm-2" })
+    </div>
+    <div class="col-sm-2">
+        Price from:
+        @Html.TextBox("priceFrom", "", new { @class = "form-control mr-sm-2" })
+    </div>
+    <div class="col-sm-2">
+        Price to:
+        @Html.TextBox("priceTo", "", new { @class = "form-control mr-sm-2" })
+    </div>
+    <div class="col-sm-2">
+        Items per page:
+        @Html.TextBox("itemsPerPage", "", new { @class = "form-control mr-sm-2" })
+    </div>
+    <div class="col-sm-2">
+        Sort by:
+        @Html.DropDownList("wayOfSorting", listForSorting, new { @class = "form-control mr-sm-2" })
+    </div>
+    <br/>
+    <br/>
+    <br/>
+    <div class="col-sm-2">
+        <button class="btn btn-success" type="submit">Sort</button>
+    </div>
+    </div>
+}
+<br /><br /><br />
+<div class="card-deck">
+@{
+    var i = 0;
+    foreach (var item in Model)
+    {
+            <div class="col-sm-4">
+                <div class="card">
+                    <a href='@Url.Action("DetailAuctionFromAllAuctions", "Auction", new {id = @item.id.ToString()})'>
+                        <div class="card-header text-primary text-center"><h4>@item.name</h4></div>
+                    </a>
+                    <div class="card-body">
+                        @{
+                            string imreBase64Data = Convert.ToBase64String(@item.image);
+                            string imgDataUrl = string.Format("data:image/png;base64,{0}", imreBase64Data);
+                        }
+                        <img class="card-img-top" src="@imgDataUrl" style="width:100%"/>
+                        <center>
+                            <h5 class="text-success text-center">@item.currPrice @item.currency</h5>
+                            @item.bids.LastOrDefault().user.mail
+                        </center>
+                    </div>
+                </div>
+            </div>
+        <script>
+                @{
+                      string timeString2 = "time" + @item.id;
+                  }
+            document.getElementById("@timeString2").innerHTML = "COMPLETED";
+            document.getElementById("@timeString2").className = "text-danger";
+            </script>
+        i++;
+    }
+}
+</div>
+<br /><br />
+
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    @Html.PagedListPager(Model, page => Url.Action("Won",
+    new { page, currentFilter = ViewBag.CurrentFilter, priceFrom = ViewBag.priceFrom, priceTo = ViewBag.priceTo, wayOfSorting = ViewBag.wayOfSorting, itemsPerPage = ViewBag.itemsPerPage }))
+
+   

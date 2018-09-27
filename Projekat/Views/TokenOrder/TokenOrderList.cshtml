@@ -1,0 +1,73 @@
+﻿@model Projekat.Models.AdminSettings
+@{
+    ViewBag.Title = "TokenOrderList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Order Tokens That You Need</h2>
+
+<div class="card-deck">
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-header text-center"><h4>Silver Pack</h4></div>
+            <div class="card-body">
+                <img class="card-img-top" src="https://en.numista.com/catalogue/photos/tokens/g12373.jpg" style="width:100%" />
+                <center>
+                    <h3 class="text-info">Offer: @Model.S tokens</h3>
+                    <h5 class="text-success text-center">Cost: @(Model.S * Model.T) @Model.C</h5>
+                    <p class="card-text">
+                        This is the cheapest alternative.
+                    </p>
+                    @using (Html.BeginForm("Order", "TokenOrder", new { tokens = "silver"}, FormMethod.Post, new { role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <input type="submit" value="" class="btn" style="background:url(https://www.centili.com/images/centili-widget-button.png) no-repeat; width:147px; " />
+                    }
+                </center>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-header text-center"><h4>Gold Pack</h4></div>
+            <div class="card-body">
+                <img class="card-img-top" src="https://previews.123rf.com/images/arcady31/arcady311210/arcady31121000101/15856641-blank-gold-token-illustration.jpg" style="width:100%" />
+                <center>
+                    <h3 class="text-info">Offer: @Model.G tokens</h3>
+                    <h5 class="text-success text-center">Cost: @(Model.G * Model.T) @Model.C</h5>
+                    <p class="card-text">
+                        This is offer is neither cheap nor expensive. Good choice.
+                    </p>
+                    @using (Html.BeginForm("Order", "TokenOrder", new { tokens = "gold"}, FormMethod.Post, new { role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <input type="submit" value="" class="btn" style="background:url(https://www.centili.com/images/centili-widget-button.png) no-repeat; width:147px; " />
+                    }
+                </center>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-header text-center"><h4>Platinum Pack</h4></div>
+            <div class="card-body">
+                <img class="card-img-top" src="https://pre00.deviantart.net/8b69/th/pre/f/2012/331/a/9/fallout_new_vegas_lucky_38_casino_platinum_chip_by_jaggedgenius-d5mbfu2.png" style="width:100%" />
+                <center>
+                    <h3 class="text-info">Offer: @Model.P tokens</h3>
+                    <h5 class="text-success text-center">Cost: @(Model.P * Model.T) @Model.C</h5>
+                    <p class="card-text">
+                    Expensive choice.
+                    </p>
+                    @using (Html.BeginForm("Order", "TokenOrder", new { tokens = "platinum"}, FormMethod.Post, new { role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <input type="submit" value="" class="btn" style="background:url(https://www.centili.com/images/centili-widget-button.png) no-repeat; width:147px; " />
+                    }
+                </center>
+            </div>
+        </div>
+    </div>
+</div>

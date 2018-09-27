@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNet.Identity
+@{
+    Projekat.Models.User user = Session["User"] as Projekat.Models.User;
+}
+@if(user != null && user.isAdmin != 1)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logOffForm", @class = "navbar-right" }))
+    {
+    @Html.AntiForgeryToken()
+
+        <ul class="nav navbar-nav navbar-right">
+            <li>@Html.ActionLink("Log off", "LogOff", "Account", routeValues: null, htmlAttributes: new { id = "logoffLink" })</li>
+            <li>@Html.ActionLink("Edit", "Edit", "Account", routeValues: null, htmlAttributes: new { id = "editLink" })</li>
+            <li>@Html.ActionLink("Create new auction", "CreateNewAuction", "Auction", routeValues: null, htmlAttributes: new { id = "createNewAuctionLink" })</li>
+            <li>@Html.ActionLink("Buy Tokens", "TokenOrderList", "TokenOrder", routeValues: null, htmlAttributes: new { id = "tokenOrderLink" })</li>
+            <li>@Html.ActionLink("See Orders", "TokenOrders", "TokenOrder", routeValues: null, htmlAttributes: new { id = "tokenOrdersLink" })</li>
+            <li>@Html.ActionLink("About User", "AboutUser", "Account", routeValues: null, htmlAttributes: new { id = "aboutUserLink" })</li>
+            <li>@Html.ActionLink("Auctions That I Won", "Won", "Auction", routeValues: null, htmlAttributes: new { id = "wonLink" })</li>
+
+        </ul>
+    }
+}
+else
+    if (user == null)
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
+        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+}
+@if (user != null && user.isAdmin == 1)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logOffForm", @class = "navbar-right" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <ul class="nav navbar-nav navbar-right">
+            <li>@Html.ActionLink("Log off", "LogOff", "Account", routeValues: null, htmlAttributes: new { id = "logoffLink" })</li>
+            <li>@Html.ActionLink("Edit", "Edit", "Account", routeValues: null, htmlAttributes: new { id = "editLink" })</li>
+       @*     <li>@Html.ActionLink("Open Auction", "OpenAuction", "Admin", routeValues: null, htmlAttributes: new { id = "openAuctionLink" })</li>*@
+            <li>@Html.ActionLink("Change Parameters", "ChangeParameters", "Admin", routeValues: null, htmlAttributes: new { id = "changeParametersLink" })</li>
+        </ul>
+    }
+}
